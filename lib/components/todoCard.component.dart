@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_app/configs/Constant.dart';
+import 'package:my_app/models/todo.model.dart';
 
 class TodoCard extends StatefulWidget {
-  String title;
-  String description;
-  bool status;
-  String image;
-  String createdAt;
-
-  TodoCard(
-      {required this.title,
-      required this.description,
-      required this.status,
-      required this.image,
-      required this.createdAt});
+  final MTodo todo;
+  TodoCard({required this.todo});
 
   @override
   _TodoCardState createState() => _TodoCardState();
@@ -30,21 +21,33 @@ class _TodoCardState extends State<TodoCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 500,
+      // width: 500,
       // height: 400,
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
             child: Image.network(
-              '$URL_BASE/${widget.image}',
+              '$URL_BASE/${widget.todo.image}',
+              height: 300,
               fit: BoxFit.cover,
             ),
           ),
           GestureDetector(
               onTap: () {
                 setState(() {
-                  widget.status = !widget.status;
+                  widget.todo.status = !widget.todo.status;
                 });
               },
               child: Card(
@@ -53,7 +56,7 @@ class _TodoCardState extends State<TodoCard> {
                     borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(10),
                         bottomRight: Radius.circular(10))),
-                color: widget.status ? Colors.green : Colors.redAccent,
+                color: widget.todo.status ? Colors.green : Colors.redAccent,
                 // elevation: 10,
                 child: Row(
                   children: <Widget>[
@@ -61,13 +64,14 @@ class _TodoCardState extends State<TodoCard> {
                       children: <Widget>[
                         Checkbox(
                           checkColor: Colors.white,
-                          activeColor:
-                              widget.status ? Colors.green : Colors.redAccent,
+                          activeColor: widget.todo.status
+                              ? Colors.green
+                              : Colors.redAccent,
                           // fillColor: MaterialStateProperty.resolveWith(getColor),
-                          value: widget.status,
+                          value: widget.todo.status,
                           onChanged: (bool? value) {
                             setState(() {
-                              widget.status = !widget.status;
+                              widget.todo.status = !widget.todo.status;
                             });
                           },
                         )
@@ -85,7 +89,7 @@ class _TodoCardState extends State<TodoCard> {
                                   Container(
                                     padding: EdgeInsets.only(bottom: 5),
                                     child: Text(
-                                      widget.title,
+                                      widget.todo.title,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
@@ -100,7 +104,8 @@ class _TodoCardState extends State<TodoCard> {
                                     padding: EdgeInsets.only(right: 10),
                                     child: Text(
                                       DateFormat('HH:mm dd/MM/yyyy').format(
-                                          DateTime.parse(widget.createdAt)),
+                                          DateTime.parse(
+                                              widget.todo.createdAt)),
                                       style: TextStyle(
                                           fontSize: 14, color: Colors.white),
                                     ),
@@ -112,7 +117,7 @@ class _TodoCardState extends State<TodoCard> {
                           Row(
                             children: <Widget>[
                               Text(
-                                widget.description,
+                                widget.todo.description,
                                 style: TextStyle(
                                     fontSize: 16, color: Colors.white),
                               )

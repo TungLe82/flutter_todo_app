@@ -1,10 +1,8 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:my_app/services/api.service.dart';
-import 'package:my_app/services/fbLogin.dart';
-import 'package:my_app/services/hexColor.dart';
-import 'package:my_app/services/setTimeOut.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:my_app/services/toast.dart';
+import 'package:my_app/services/user.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -79,12 +77,15 @@ class _LoginPageState extends State<LoginPage> {
             //     .showSnackBar(SnackBar(content: Text('Processing Data')));
             // print({"email": _email, "password": _password});
             try {
-              final user = await API
-                  .loginService({"email": _email, "password": _password});
+              EasyLoading.show();
+              final user = await UserService.login(
+                  {"email": _email, "password": _password});
+              EasyLoading.dismiss();
               final prefs = await SharedPreferences.getInstance();
               prefs.setString('token', user.token);
               Navigator.pushNamed(context, '/todo');
             } catch (e) {
+              EasyLoading.dismiss();
               showToast(text: "Login failed!", color: Colors.red);
             }
           }

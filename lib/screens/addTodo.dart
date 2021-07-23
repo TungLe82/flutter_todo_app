@@ -1,11 +1,11 @@
-import 'dart:convert';
 import 'dart:io' as IO;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:my_app/services/api.service.dart';
+import 'package:my_app/services/todo.service.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({Key? key}) : super(key: key);
@@ -182,12 +182,15 @@ class _AddTodoState extends State<AddTodo> {
                                     _image!.path,
                                     filename: _image!.name)
                               });
-                              final result = await API.addTodo(formData);
-                              print(result);
+                              EasyLoading.show();
+                              final result =
+                                  await TodoService.addTodo(formData);
+                              EasyLoading.dismiss();
                               if (result['data'] != null) {
                                 Navigator.of(context).pop(true);
                               }
                             } catch (e) {
+                              EasyLoading.dismiss();
                               print(e);
                             }
                           },

@@ -1,10 +1,8 @@
-import 'dart:convert';
-
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:my_app/services/api.service.dart';
-import 'package:my_app/services/setTimeOut.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:my_app/services/toast.dart';
+import 'package:my_app/services/user.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -117,12 +115,15 @@ class _RegisterPageState extends State<RegisterPage> {
             // ScaffoldMessenger.of(context)
             //     .showSnackBar(SnackBar(content: Text('Processing Data')));
             try {
-              final user = await API.registerService(
+              EasyLoading.show();
+              final user = await UserService.register(
                   {"name": _name, "email": _email, "password": _password});
+              EasyLoading.dismiss();
               final prefs = await SharedPreferences.getInstance();
               prefs.setString('token', user.token);
               Navigator.pushNamed(context, '/todo');
             } catch (e) {
+              EasyLoading.dismiss();
               showToast(text: "Register failed!", color: Colors.red);
             }
           }

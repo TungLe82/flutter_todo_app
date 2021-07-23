@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:my_app/components/todoCard.component.dart';
 import 'package:my_app/models/todo.model.dart';
-import 'package:my_app/services/api.service.dart';
+import 'package:my_app/services/todo.service.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({Key? key}) : super(key: key);
@@ -30,12 +31,7 @@ class _TodoPageState extends State<TodoPage> {
 
   List<Widget> _buildListView() {
     return _todos.map((todo) {
-      return TodoCard(
-          title: todo.title,
-          description: todo.description,
-          createdAt: todo.createdAt,
-          image: todo.image,
-          status: todo.status ? true : false);
+      return TodoCard(todo: todo);
     }).toList();
   }
 
@@ -44,17 +40,18 @@ class _TodoPageState extends State<TodoPage> {
 
   Future<void> _getTodos() async {
     try {
-      final result = await API.getTodos();
+      EasyLoading.show();
+      final result = await TodoService.getTodos();
+      EasyLoading.dismiss();
       setState(() {
-        final list = List<MTodo>.from(
-            result["data"].map((todo) => MTodo.fromJson(todo)));
-        list.sort((a, b) {
+        result.sort((a, b) {
           return DateTime.parse(b.createdAt)
               .compareTo(DateTime.parse(a.createdAt));
         });
-        _todos = list;
+        _todos = result;
       });
     } catch (e) {
+      EasyLoading.dismiss();
       print("Error _getTodos");
     }
   }
