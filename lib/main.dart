@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/route_manager.dart';
 import 'package:my_app/configs/Routes.dart';
 import 'package:my_app/screens/Login.dart';
 
@@ -13,7 +14,7 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Welcome to Flutter',
       home: LoginPage(),
       debugShowCheckedModeBanner: false,

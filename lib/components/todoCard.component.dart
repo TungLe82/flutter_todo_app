@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_app/configs/Constant.dart';
+import 'package:my_app/controllers/todo.controller.dart';
 import 'package:my_app/models/todo.model.dart';
+import 'package:my_app/services/toast.dart';
 
 class TodoCard extends StatefulWidget {
   final MTodo todo;
@@ -12,10 +16,72 @@ class TodoCard extends StatefulWidget {
 }
 
 class _TodoCardState extends State<TodoCard> {
-  DateFormat dateFormat = DateFormat("HH:mm dd/MM/YYYY");
+  final todoController = Get.put<TodoController>(TodoController());
 
   Color getColor(Set<MaterialState> states) {
     return Colors.white;
+  }
+
+  _showPopupMenu(Offset offset, id) async {
+    double left = offset.dx;
+    double top = offset.dy;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(left, top, 0, 0),
+      items: [
+        if (widget.todo.status != TODO_STATUS["CANCEL"])
+          PopupMenuItem<String>(
+              child: GestureDetector(
+            child: const Text('Cancel'),
+            onTap: () async {
+              try {
+                EasyLoading.show();
+                await todoController.changeStatus(id, TODO_STATUS["CANCEL"]);
+                EasyLoading.dismiss();
+                Navigator.pop(context);
+              } catch (e) {
+                EasyLoading.dismiss();
+              }
+            },
+          )),
+        PopupMenuItem<String>(
+            child: GestureDetector(
+          child: const Text('Delete'),
+          onTap: () async {
+            try {
+              EasyLoading.show();
+              await todoController.delete(id);
+              EasyLoading.dismiss();
+              Navigator.pop(context);
+              showToast(text: "Delete success.");
+            } catch (e) {
+              EasyLoading.dismiss();
+            }
+          },
+        )),
+      ],
+      elevation: 8.0,
+    );
+  }
+
+  Color _getColorByStatus(status) {
+    if (status == TODO_STATUS["IN_PROGRESS"]) {
+      return Colors.blueAccent;
+    } else if (status == TODO_STATUS["COMPLETED"]) {
+      return Colors.green;
+    } else {
+      return Colors.redAccent;
+    }
+  }
+
+  getNextStatus(status) {
+    if (status == TODO_STATUS["IN_PROGRESS"]) {
+      return TODO_STATUS["COMPLETED"];
+    } else if (status == TODO_STATUS["COMPLETED"]) {
+      return TODO_STATUS["IN_PROGRESS"];
+    } else {
+      return TODO_STATUS["IN_PROGRESS"];
+    }
   }
 
   @override
@@ -27,9 +93,9 @@ class _TodoCardState extends State<TodoCard> {
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
+            // spreadRadius: 0.2,
             blurRadius: 5,
-            offset: Offset(0, 3), // changes position of shadow
+            // offset: Offset(0, 0.1), // changes position of shadow
           ),
         ],
       ),
@@ -37,18 +103,39 @@ class _TodoCardState extends State<TodoCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
-            child: Image.network(
-              '$URL_BASE/${widget.todo.image}',
-              height: 300,
-              fit: BoxFit.cover,
-            ),
-          ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
+              child: Stack(children: <Widget>[
+                Positioned(
+                    child: Image.network(
+                  '$URL_BASE/${widget.todo.image}',
+                  height: 300,
+                  width: 500,
+                  fit: BoxFit.cover,
+                )),
+                Positioned(
+                  top: 10.0,
+                  right: 10.0,
+                  child: GestureDetector(
+                    onTapDown: (TapDownDetails details) {
+                      _showPopupMenu(details.globalPosition, widget.todo.id);
+                    },
+                    child: Icon(
+                      Icons.more_vert,
+                      size: 30,
+                    ),
+                  ),
+                )
+              ])),
           GestureDetector(
-              onTap: () {
-                setState(() {
-                  widget.todo.status = !widget.todo.status;
-                });
+              onTap: () async {
+                try {
+                  EasyLoading.show();
+                  await todoController.changeStatus(
+                      widget.todo.id, getNextStatus(widget.todo.status));
+                  EasyLoading.dismiss();
+                } catch (e) {
+                  EasyLoading.dismiss();
+                }
               },
               child: Card(
                 margin: EdgeInsets.all(0),
@@ -56,25 +143,36 @@ class _TodoCardState extends State<TodoCard> {
                     borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(10),
                         bottomRight: Radius.circular(10))),
-                color: widget.todo.status ? Colors.green : Colors.redAccent,
+                color: _getColorByStatus(widget.todo.status),
                 // elevation: 10,
                 child: Row(
                   children: <Widget>[
                     Column(
                       children: <Widget>[
-                        Checkbox(
-                          checkColor: Colors.white,
-                          activeColor: widget.todo.status
-                              ? Colors.green
-                              : Colors.redAccent,
-                          // fillColor: MaterialStateProperty.resolveWith(getColor),
-                          value: widget.todo.status,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              widget.todo.status = !widget.todo.status;
-                            });
-                          },
-                        )
+                        widget.todo.status == TODO_STATUS["CANCEL"]
+                            ? Container(
+                                padding: EdgeInsets.all(12),
+                                child: Icon(Icons.clear_outlined),
+                              )
+                            : Checkbox(
+                                checkColor: Colors.white,
+                                activeColor:
+                                    _getColorByStatus(widget.todo.status),
+                                // fillColor: MaterialStateProperty.resolveWith(getColor),
+                                value: widget.todo.status ==
+                                    TODO_STATUS["COMPLETED"],
+                                onChanged: (bool? value) async {
+                                  try {
+                                    EasyLoading.show();
+                                    await todoController.changeStatus(
+                                        widget.todo.id,
+                                        getNextStatus(widget.todo.status));
+                                    EasyLoading.dismiss();
+                                  } catch (e) {
+                                    EasyLoading.dismiss();
+                                  }
+                                },
+                              )
                       ],
                     ),
                     Expanded(

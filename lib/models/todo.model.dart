@@ -2,7 +2,7 @@ class MTodo {
   num id;
   String title;
   String description;
-  bool status;
+  num status;
   String image;
   String createdAt;
   String updatedAt;
@@ -11,7 +11,7 @@ class MTodo {
       {this.id = 1,
       this.title = '',
       this.description = '',
-      this.status = false,
+      this.status = 1,
       this.image = '',
       this.createdAt = '',
       this.updatedAt = ''});
@@ -21,7 +21,7 @@ class MTodo {
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      status: json['status'] == 1,
+      status: json['status'],
       image: json['image'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],

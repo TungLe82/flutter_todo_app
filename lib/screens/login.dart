@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
               EasyLoading.dismiss();
               final prefs = await SharedPreferences.getInstance();
               prefs.setString('token', user.token);
-              Navigator.pushNamed(context, '/todo');
+              Navigator.pushReplacementNamed(context, '/todo');
             } catch (e) {
               EasyLoading.dismiss();
               showToast(text: "Login failed!", color: Colors.red);

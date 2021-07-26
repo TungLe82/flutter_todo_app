@@ -29,6 +29,7 @@ class DioService {
         _dio.interceptors.requestLock.lock();
         _dio.interceptors.responseLock.lock();
         // refresh token
+        // Navigator.
         _dio.interceptors.requestLock.unlock();
         _dio.interceptors.responseLock.unlock();
         return handler.next(e);
